@@ -5,41 +5,72 @@ import os
 def removerTextoTachado(caminho_entrada, caminho_saida):
     doc = Document(caminho_entrada)
 
-    for paragrafo in doc.paragraphs:
-        novas_runs = []
-        for run in paragrafo.runs:
-            if run.font.strike:
-                continue  # ignora texto tachado
-            novas_runs.append(run.text)
+    # Processa parágrafos
+    processar_paragrafos(doc.paragraphs)
 
-        paragrafo.clear()  # limpa o parágrafo atual
+    # Processa tabelas
+    for tabela in doc.tables:
+        for linha in tabela.rows:
+            for celula in linha.cells:
+                processar_paragrafos(celula.paragraphs)
 
-        for texto in novas_runs:
-            paragrafo.add_run(texto)  # adiciona texto não tachado
+    # Processa cabeçalhos e rodapés
+    for secao in doc.sections:
+        processar_paragrafos(secao.header.paragraphs)
+        processar_paragrafos(secao.footer.paragraphs)
 
-    # Chama a função para alterar os números ordinais
+    # Corrige os números ordinais
     alterarSimboloOrdinal(doc)
 
+    # Salva o documento
     doc.save(caminho_saida)
-    print(f'Documento salvo sem texto tachado em: {caminho_saida}')
-    
-    # Corrigindo para tratar o caminho com espaços corretamente
-    os.system(f'start "" "{caminho_saida}"')
+    print(f'Documento salvo em: {caminho_saida}')
+
+    # Abre o arquivo automaticamente
+    os.startfile(caminho_saida)
+
+
+def processar_paragrafos(paragrafos):
+    for paragrafo in paragrafos:
+        runs_para_remover = []
+        for run in paragrafo.runs:
+            if run.font.strike is not None and run.font.strike:
+                runs_para_remover.append(run)
+        for run in runs_para_remover:
+            run.text = ''  # Remove texto tachado
 
 
 def alterarSimboloOrdinal(doc):
-    # Atualiza o padrão para capturar números ordinais simples ou seguidos de sufixos alfabéticos (como -B, -C)
-    padrao_ordinais = r'(\d+)(o|a|s)(-[A-Za-z])?(?=\s|$)'  # Aceita ordinais como 3o, 4o-B, 5a-C, etc.
+    padrao_ordinais = r'(\d+)(o|a|s)(-[A-Za-z])?(?=\s|$)'
 
-    for paragrafo in doc.paragraphs:
+    # Processa parágrafos normais
+    substituir_ordinais(doc.paragraphs)
+
+    # Processa tabelas
+    for tabela in doc.tables:
+        for linha in tabela.rows:
+            for celula in linha.cells:
+                substituir_ordinais(celula.paragraphs)
+
+    # Processa cabeçalhos e rodapés
+    for secao in doc.sections:
+        substituir_ordinais(secao.header.paragraphs)
+        substituir_ordinais(secao.footer.paragraphs)
+
+
+def substituir_ordinais(paragrafos):
+    padrao_ordinais = r'(\d+)(o|a|s)(-[A-Za-z])?(?=\s|$)'
+
+    for paragrafo in paragrafos:
         for run in paragrafo.runs:
             if run.font.strike:
-                continue  # ignora texto tachado
-            # Substitui o padrão de número ordinal com o símbolo '°'
-            texto_corrigido = re.sub(padrao_ordinais, r'\1°\3', run.text)  # Coloca o símbolo '°' e preserva o sufixo, se houver
+                continue  # Ignora texto tachado
+            texto_corrigido = re.sub(padrao_ordinais, r'\1°\3', run.text)
             run.text = texto_corrigido
 
-# Chamada de função com o caminho corrigido
-removerTextoTachado(r'C:\Matheus Siqueira\Python\RemoveStrikethrough\LEI DE REGISTROS PÚBLICOS (TESTE).docx', 
-                    r'C:\Matheus Siqueira\Python\RemoveStrikethrough\saida_sem_tachado.docx')
 
+# Exemplo de uso - substitua pelos seus caminhos
+removerTextoTachado(
+    r'C:\Matheus Siqueira\Python\RemoveStrikethrough\LEI DE REGISTROS PÚBLICOS (TESTE).docx',
+    r'C:\Matheus Siqueira\Python\RemoveStrikethrough\saida_sem_tachado.docx'
+)
