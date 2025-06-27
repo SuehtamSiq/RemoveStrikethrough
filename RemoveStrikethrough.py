@@ -71,6 +71,6 @@ def substituir_ordinais(paragrafos):
 
 # Exemplo de uso - substitua pelos seus caminhos
 removerTextoTachado(
-    r'C:\Matheus Siqueira\Python\RemoveStrikethrough\LEI DE REGISTROS PÚBLICOS (TESTE).docx',
-    r'C:\Matheus Siqueira\Python\RemoveStrikethrough\saida_sem_tachado.docx'
+    r'C:\Users\edito\OneDrive\Matheus Siqueira\Python\RemoveStrikethrough\MINI CÓDIGO CIVIL - (23.06).docx',
+    r'C:\Users\edito\OneDrive\Matheus Siqueira\Python\RemoveStrikethrough\saida_sem_tachado.docx'
 )
